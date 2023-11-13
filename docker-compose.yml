@@ -3,7 +3,10 @@ version: '3.3'
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+    # image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+    build:
+      context: "./es"
+      dockerfile: "Dockerfile"
     ports:
       - "9200:9200"
     volumes:
@@ -14,12 +17,12 @@ services:
 
   es-op-api:
     build:
-      context: "./es_backend"
+      context: "./backend"
       dockerfile: "Dockerfile"
     ports:
       - 8002:8002
     volumes:
-      - ./es_backend/api:/src
+      - ./backend/api:/src
 
 volumes:
   es-data:

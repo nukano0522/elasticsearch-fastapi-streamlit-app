@@ -45,44 +45,56 @@ def get_index_info(index_name):
     
 
 # クエリを指定して検索
-@app.get('/search/{index_name}/{query}')
-def search_query(index_name, query):
-    query = query
-
-    embedding_start = time.time()
-    query_vector = swem.average_pooling(query).tolist()
-    embedding_time = time.time() - embedding_start
+@app.get('/search/{index_name}/{search_word}')
+def search_query(index_name, search_word):
     
-    script_query = {
-        "script_score": {
-            "query": {"match_all": {}},
-            "script": {
-                "source": "cosineSimilarity(params.query_vector, doc['text_vector']) + 1.0",
-                "params": {"query_vector": query_vector}
+    def print_res(response):
+        print("{} total hits.".format(response["hits"]["total"]["value"]))
+        # print("search time: {:.2f} ms".format(search_time * 1000))
+        for hit in response["hits"]["hits"]:
+            print("id: {}, score: {}".format(hit["_id"], hit["_score"]))
+            print(hit["_source"]["text"][:200])
+            print()
+            
+    
+    def create_query(search_word, is_vector=False):        
+        if is_vector:
+            query_vector = swem.average_pooling(search_word).tolist()
+            script_query = {
+                "script_score": {
+                    "query": {"match_all": {}},
+                    "script": {
+                        "source": "cosineSimilarity(params.query_vector, doc['text_vector']) + 1.0",
+                        "params": {"query_vector": query_vector}
+                    }
+                }
             }
-        }
-    }
+        else:
+            script_query = {
+                "match": {
+                    "text": {
+                        "query": search_word,
+                    }
+                }
+            }
+        return script_query
     
-    search_start = time.time()
+    script_query = create_query(search_word)
+    
     response = es.search(
         index=index_name,
         body={
-            "size": 10,
+            "size": 30,
             "query": script_query,
             "_source": {"includes": ["title", "text"]}
         }
     )
-    search_time = time.time() - search_start
-    print(f"search_time: {search_time}")
     
-    # TOP5
-    hits = response["hits"]["hits"]
     result = []
-    for i in range(5):
-        title = hits[i]["_source"]["title"]
-        text = hits[i]["_source"]["text"][:200]
-        result.append(
-            {"title": title, "text": text}
-        )
+    for hit in response["hits"]["hits"]:
+        title = hit["_source"]["title"]
+        text = hit["_source"]["text"][:200]
+        result.append({"title": title, "text": text})
+    
         
     return result
