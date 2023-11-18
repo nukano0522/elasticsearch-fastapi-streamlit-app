@@ -6,8 +6,12 @@ from gensim.models import KeyedVectors
 from swem import MeCabTokenizer
 from swem import SWEM
 
+# import streamlit as st
+
 import os, pickle, time
 
+
+### backend - FastAPI
 MODEL_W2V = "wiki/w2v.pickle"
 
 app = FastAPI()
@@ -98,3 +102,5 @@ def search_query(index_name, search_word):
     
         
     return result
+
+

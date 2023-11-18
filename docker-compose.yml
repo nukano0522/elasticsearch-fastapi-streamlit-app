@@ -15,7 +15,7 @@ services:
     environment:
       discovery.type: single-node
 
-  es-op-api:
+  backend:
     build:
       context: "./backend"
       dockerfile: "Dockerfile"
@@ -23,6 +23,15 @@ services:
       - 8002:8002
     volumes:
       - ./backend/api:/src
+
+  frontend:
+    build:
+      context: "./frontend"
+      dockerfile: "Dockerfile"
+    ports:
+      - 8501:8501
+    volumes:
+      - ./frontend/app:/src
 
 volumes:
   es-data:
