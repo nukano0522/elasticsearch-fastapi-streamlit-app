@@ -14,7 +14,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install fastapi
 RUN pip3 install "uvicorn[standard]"
 RUN pip3 install requests
-RUN pip3 install elasticsearch==7.13.4
+RUN pip3 install elasticsearch==8.11.0
 RUN pip3 install mecab-python3
 RUN pip3 install gensim==3.8.0
 # RUN pip3 install transformers

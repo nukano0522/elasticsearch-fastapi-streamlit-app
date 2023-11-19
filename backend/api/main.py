@@ -10,6 +10,8 @@ from swem import SWEM
 
 import os, pickle, time
 
+import elasticsearch
+print(elasticsearch.__version__)
 
 ### backend - FastAPI
 MODEL_W2V = "wiki/w2v.pickle"
@@ -17,7 +19,14 @@ MODEL_W2V = "wiki/w2v.pickle"
 app = FastAPI()
 
 print("###### model_loading #####")
-es = Elasticsearch("http://elasticsearch_pg_elasticsearch_1:9200")
+# es = Elasticsearch("http://elasticsearch_pg_elasticsearch_1:9200")
+es = Elasticsearch(
+    "https://elasticsearch_pg_elasticsearch_1:9200",
+    ca_certs="http_ca.crt",
+    basic_auth=("elastic", "m7K2M1_momMOLtJbs7eT"),
+)
+print(es.info())
+
 
 if os.path.exists(MODEL_W2V):
     print("Loading saved model...")
@@ -95,7 +104,6 @@ def search_query(index_name, search_word):
     
     result = []
     for hit in response["hits"]["hits"]:
-        # title = hit["_source"]["title"]
         text = hit["_source"]["text"][:200]
         result.append({"text": text})
     
