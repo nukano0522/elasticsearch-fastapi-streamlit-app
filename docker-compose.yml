@@ -22,7 +22,7 @@ services:
     ports:
       - 8002:8002
     volumes:
-      - ./backend/api:/src
+      - backend-data:/src
 
   frontend:
     build:
@@ -31,8 +31,21 @@ services:
     ports:
       - 8501:8501
     volumes:
-      - ./frontend/app:/src
+      - frontend-data:/src
 
 volumes:
   es-data:
     driver: local
+  backend-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backend/api
+  frontend-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./frontend/app
+    

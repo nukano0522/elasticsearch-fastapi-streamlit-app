@@ -8,8 +8,9 @@ def run():
         page_icon="👋",
     )
     
+    
     st.markdown("""
-                ## インデックス情報
+                ### インデックス情報
                 """)    
     res = requests.get('http://elasticsearch_pg_backend_1:8002/es/index/info/kaigo_swem_01')
     st.write(res.json())

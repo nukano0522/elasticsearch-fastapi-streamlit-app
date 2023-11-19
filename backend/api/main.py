@@ -54,7 +54,6 @@ def search_query(index_name, search_word):
     
     def print_res(response):
         print("{} total hits.".format(response["hits"]["total"]["value"]))
-        # print("search time: {:.2f} ms".format(search_time * 1000))
         for hit in response["hits"]["hits"]:
             print("id: {}, score: {}".format(hit["_id"], hit["_score"]))
             print(hit["_source"]["text"][:200])
@@ -90,15 +89,15 @@ def search_query(index_name, search_word):
         body={
             "size": 30,
             "query": script_query,
-            "_source": {"includes": ["title", "text"]}
+            "_source": {"includes": ["text"]}
         }
     )
     
     result = []
     for hit in response["hits"]["hits"]:
-        title = hit["_source"]["title"]
+        # title = hit["_source"]["title"]
         text = hit["_source"]["text"][:200]
-        result.append({"title": title, "text": text})
+        result.append({"text": text})
     
         
     return result
