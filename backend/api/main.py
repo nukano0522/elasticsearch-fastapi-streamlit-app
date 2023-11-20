@@ -10,8 +10,8 @@ from swem import SWEM
 
 import os, pickle, time
 
-import elasticsearch
-print(elasticsearch.__version__)
+# import elasticsearch
+# print(elasticsearch.__version__)
 
 ### backend - FastAPI
 MODEL_W2V = "wiki/w2v.pickle"
@@ -19,20 +19,27 @@ MODEL_W2V = "wiki/w2v.pickle"
 app = FastAPI()
 
 print("###### model_loading #####")
-# es = Elasticsearch("https://elasticsearch_pg_elasticsearch_1:9200")
-# es = Elasticsearch("http://elasticsearch_pg_elasticsearch_1:9200")
-# es = Elasticsearch(
-#     hosts="https://elasticsearch_pg_elasticsearch_1:9200",
-#     ca_certs="./http_ca.crt",
-#     basic_auth=("elastic", "Shushu1234")
-# )
-
+# Elasticsearchのコンテナが立ち上がるまで接続試行する
 # コンテナ側のconfig/elasticsearch.ymlにて、SSL通信を無効化している
-es = Elasticsearch(
-    "http://elasticsearch_pg_elasticsearch_1:9200",
-    basic_auth=("elastic", "Shushu1234"),
-)
-print(es.info())
+conn = False
+try_num = 0
+while not conn:
+    try:
+        es = Elasticsearch(
+            "http://elasticsearch_pg_elasticsearch_1:9200",
+            basic_auth=("elastic", os.environ["ELASTIC_PASSWORD"]),
+        )
+        es_info = es.info()
+        conn = True
+    except:
+        print("try connecting to elasticsearch...")
+        try_num += 1
+        time.sleep(3)
+        if try_num >= 10:
+            print("connection failed.")
+            break
+print("Connection to elasticsearch is complete.")
+print(f"es-info: {es.info()}")
 
 if os.path.exists(MODEL_W2V):
     print("Loading saved model...")

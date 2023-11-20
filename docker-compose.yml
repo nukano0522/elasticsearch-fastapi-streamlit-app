@@ -6,35 +6,17 @@ services:
     build:
       context: "./es"
       dockerfile: "Dockerfile"
-    # container_name: elasticsearch
     ports:
       - "9200:9200"
     volumes:
-      - es-data:/usr/share/elasticsearch_8.11.1/data
+      - es-data:/usr/share/elasticsearch/data
     tty: true
     environment:
       discovery.type: single-node
       xpack.security.http.ssl.enabled: "false"
       xpack.security.transport.ssl.enabled: "false"
-      ELASTIC_PASSWORD: Shushu1234
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     restart: always
-
-  # kibana:
-  #   build:
-  #     context: "./kibana"
-  #     dockerfile: "Dockerfile"
-    # container_name: kibana
-  #   ports:
-  #     - "5601:5601"
-  #   # volumes:
-  #   #   - kibana-data:/usr/share/kibana/data
-  #   environment:
-  #       - ELASTICSEARCH_URL=http://elasticsearch:9200
-  #       - ELASTICSEARCH_USERNAME=elastic
-  #       - ELASTICSEARCH_PASSWORD=Shushu1234
-  #   depends_on:
-  #     - elasticsearch
-  #   restart: always
 
   backend:
     build:
@@ -44,6 +26,10 @@ services:
       - 8002:8002
     volumes:
       - backend-data:/src
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
 
   frontend:
     build:
@@ -57,8 +43,6 @@ services:
 volumes:
   es-data:
     driver: local
-  # kibana-data:
-  #   driver: local
   backend-data:
     driver: local
     driver_opts:

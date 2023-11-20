@@ -11,13 +11,7 @@ def run():
     st.markdown("""
                 ### インデックス情報
                 """)    
-    res = requests.get('http://elasticsearch_pg_backend_1:8002/es/index/info/my_index')
-    st.write(res.json())
-    
-    st.markdown("""
-                ## 検索結果
-                """)    
-    res = requests.get('http://elasticsearch_pg_backend_1:8002/search/kaigo_swem_01/認知症')
+    res = requests.get('http://elasticsearch_pg_backend_1:8002/es/index/info/kaigo_swem_01')
     st.write(res.json())
 
     
