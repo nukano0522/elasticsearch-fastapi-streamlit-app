@@ -3,10 +3,10 @@ version: '3.3'
 services:
 
   elasticsearch:
-    # image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
     build:
       context: "./es"
       dockerfile: "Dockerfile"
+    # container_name: elasticsearch
     ports:
       - "9200:9200"
     volumes:
@@ -14,6 +14,27 @@ services:
     tty: true
     environment:
       discovery.type: single-node
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.transport.ssl.enabled: "false"
+      ELASTIC_PASSWORD: Shushu1234
+    restart: always
+
+  # kibana:
+  #   build:
+  #     context: "./kibana"
+  #     dockerfile: "Dockerfile"
+    # container_name: kibana
+  #   ports:
+  #     - "5601:5601"
+  #   # volumes:
+  #   #   - kibana-data:/usr/share/kibana/data
+  #   environment:
+  #       - ELASTICSEARCH_URL=http://elasticsearch:9200
+  #       - ELASTICSEARCH_USERNAME=elastic
+  #       - ELASTICSEARCH_PASSWORD=Shushu1234
+  #   depends_on:
+  #     - elasticsearch
+  #   restart: always
 
   backend:
     build:
@@ -36,6 +57,8 @@ services:
 volumes:
   es-data:
     driver: local
+  # kibana-data:
+  #   driver: local
   backend-data:
     driver: local
     driver_opts:

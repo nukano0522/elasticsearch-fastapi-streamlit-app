@@ -3,7 +3,6 @@ import requests
 import pandas as pd
 
 def keyword_search():
-
     # フォームの作成
     with st.form(key='my_form'):
         text_input = st.text_input(label='検索キーワードを入力してください')

@@ -19,14 +19,20 @@ MODEL_W2V = "wiki/w2v.pickle"
 app = FastAPI()
 
 print("###### model_loading #####")
+# es = Elasticsearch("https://elasticsearch_pg_elasticsearch_1:9200")
 # es = Elasticsearch("http://elasticsearch_pg_elasticsearch_1:9200")
+# es = Elasticsearch(
+#     hosts="https://elasticsearch_pg_elasticsearch_1:9200",
+#     ca_certs="./http_ca.crt",
+#     basic_auth=("elastic", "Shushu1234")
+# )
+
+# コンテナ側のconfig/elasticsearch.ymlにて、SSL通信を無効化している
 es = Elasticsearch(
-    "https://elasticsearch_pg_elasticsearch_1:9200",
-    ca_certs="http_ca.crt",
-    basic_auth=("elastic", "m7K2M1_momMOLtJbs7eT"),
+    "http://elasticsearch_pg_elasticsearch_1:9200",
+    basic_auth=("elastic", "Shushu1234"),
 )
 print(es.info())
-
 
 if os.path.exists(MODEL_W2V):
     print("Loading saved model...")
