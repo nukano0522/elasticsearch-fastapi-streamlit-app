@@ -2,7 +2,10 @@ version: "2.2"
 
 services:
   setup:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    # image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build:
+      context: "./es"
+      dockerfile: "Dockerfile"
     container_name: setup
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
@@ -25,24 +28,26 @@ services:
           echo "Creating certs";
           echo -ne \
           "instances:\n"\
-          "  - name: elasticsearch\n"\
+          "  - name: es01\n"\
           "    dns:\n"\
-          "      - elasticsearch\n"\
+          "      - es01\n"\
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
           > config/certs/instances.yml;
-          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
-          unzip -o config/certs/certs.zip -d config/certs;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs_new.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip -o config/certs/certs_new.zip -d config/certs;
         fi;
         echo "Setting file permissions"
         echo ${USER}
         
         # ファイルの存在確認
-        if [ -d config/certs/elasticsearch ]; then
+        if [ -d config/certs/es01 ]; then
+          echo "config/certs/es01 is exist"
+        elif [ -d config/certs/elasticsearch ]; then
           echo "config/certs/elasticsearch is exist"
         else
-          echo "config/certs/elasticsearch is not exist"
+          echo "config/certs/elasticsearch or config/certs/es01 is not exist"
         fi;
 
         # ファイルの存在確認
@@ -52,29 +57,31 @@ services:
           echo "config/certs/ca/ca.crt is not exist"
         fi;
 
-        
-
         chown -R root:root config/certs;
         find . -type d -exec chmod 750 \{\} \;;
         find . -type f -exec chmod 640 \{\} \;;
         echo "Waiting for Elasticsearch availability";
-        until curl -s --cacert config/certs/ca/ca.crt https://elasticsearch:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
         echo "Setting kibana_system password";
-        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
     healthcheck:
-      test: ["CMD-SHELL", "[ -f config/certs/elasticsearch/elasticsearch.crt ]"]
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
       interval: 1s
       timeout: 5s
       retries: 120
     mem_limit: ${MEM_LIMIT}
-  elasticsearch:
+  
+  es01:
     depends_on:
       setup:
         condition: service_healthy
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    container_name: elasticsearch
+    # image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build:
+      context: "./es"
+      dockerfile: "Dockerfile"
+    container_name: es01
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata01:/usr/share/elasticsearch/data
@@ -82,21 +89,21 @@ services:
     ports:
       - ${ES_PORT}:9200
     environment:
-      - node.name=elasticsearch
+      - node.name=es01
       - cluster.name=${CLUSTER_NAME}
-      - cluster.initial_master_nodes=elasticsearch
-      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=es01
+      - discovery.seed_hosts=es01
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
-      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
       - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
       - xpack.security.http.ssl.verification_mode=certificate
       - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
-      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
@@ -116,9 +123,12 @@ services:
       retries: 120
   kibana:
     depends_on:
-      elasticsearch:
+      es01:
         condition: service_healthy
-    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    # image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    build:
+      context: "./kibana"
+      dockerfile: "Dockerfile"
     container_name: kibana
     volumes:
       - certs:/usr/share/kibana/config/certs
@@ -127,8 +137,7 @@ services:
       - ${KIBANA_PORT}:5601
     environment:
       - SERVERNAME=kibana
-      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
-      # - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=https://es01:9200
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
@@ -143,6 +152,44 @@ services:
       timeout: 10s
       retries: 120
 
+  backend:
+    depends_on:
+      es01:
+        condition: service_healthy
+    build:
+      context: "./backend"
+      dockerfile: "Dockerfile"
+    container_name: backend
+    ports:
+      - 8002:8002
+    volumes:
+      - backend-data:/src
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I -X GET http://localhost:8002 | grep -q 'HTTP/1.1 200 OK'",
+        ]
+      start_period: 20s
+      interval: 60s
+      timeout: 10s
+      retries: 10
+
+  frontend:
+    depends_on:
+      backend:
+        condition: service_healthy
+    build:
+      context: "./frontend"
+      dockerfile: "Dockerfile"
+    container_name: frontend
+    ports:
+      - 8501:8501
+    volumes:
+      - frontend-data:/src
+
 volumes:
   certs:
     driver: local
@@ -150,3 +197,15 @@ volumes:
     driver: local
   kibanadata:
     driver: local
+  backend-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backend/api
+  frontend-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./frontend/app

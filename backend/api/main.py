@@ -5,13 +5,7 @@ from elasticsearch.helpers import bulk
 from gensim.models import KeyedVectors
 from swem import MeCabTokenizer
 from swem import SWEM
-
-# import streamlit as st
-
 import os, pickle, time
-
-# import elasticsearch
-# print(elasticsearch.__version__)
 
 ### backend - FastAPI
 MODEL_W2V = "wiki/w2v.pickle"
@@ -20,15 +14,16 @@ app = FastAPI()
 
 print("###### model_loading #####")
 # Elasticsearchのコンテナが立ち上がるまで接続試行する
-# コンテナ側のconfig/elasticsearch.ymlにて、SSL通信を無効化している
 conn = False
 try_num = 0
 while not conn:
     try:
         es = Elasticsearch(
-            "http://elasticsearch_pg_elasticsearch_1:9200",
+            "https://es01:9200",
+            ca_certs="./ca.crt",
             basic_auth=("elastic", os.environ["ELASTIC_PASSWORD"]),
         )
+        
         es_info = es.info()
         conn = True
     except:
@@ -58,7 +53,11 @@ else:
     
 tokenizer = MeCabTokenizer("-O wakati")
 swem = SWEM(w2v, tokenizer)
-    
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
 # インデックス情報
 @app.get('/es/index/info/{index_name}')
 def get_index_info(index_name):

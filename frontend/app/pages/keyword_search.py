@@ -11,7 +11,7 @@ def keyword_search():
     # サブミットボタンが押されたときの処理
     if submit_button:
         # ここでバックエンドのデータ処理を行う
-        res = requests.get(f"http://elasticsearch_pg_backend_1:8002/search/kaigo_swem_01/{text_input}")
+        res = requests.get(f"http://backend:8002/search/kaigo_swem_01/{text_input}")
         # st.write(res.json())
         data = res.json()
         df = pd.json_normalize(data)
