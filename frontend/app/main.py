@@ -11,7 +11,7 @@ def run():
     st.markdown("""
                 ### インデックス情報
                 """)    
-    res = requests.get('http://backend:8002/es/index/info/kaigo_swem_01')
+    res = requests.get('http://backend:8002/es/index/info/my_index_01')
     st.write(res.json())
 
     

@@ -24,7 +24,7 @@ services:
           bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
           unzip -o config/certs/ca.zip -d config/certs;
         fi;
-        if [ ! -f config/certs/certs.zip ]; then
+        if [ ! -f config/certs/certs_new.zip ]; then
           echo "Creating certs";
           echo -ne \
           "instances:\n"\
