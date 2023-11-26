@@ -65,22 +65,3 @@ def create_index(es, index_name="jawikinews"):
         print("bulk insert end.")
         index_count = es.count(index=index_name)
         print(f"Indexed {index_count['count']} documents.")
-        
-    else:
-        def bulk_insert(docs):
-            for doc in docs:
-                yield {
-                    "_op_type": "index",
-                    "_index": index_name,
-                    "text": doc,
-                }
-
-        df = pd.read_csv("./data/生活記録DAR_20220702_TSV", sep="\t")
-        dar_text = df[(df["DAR内容"].notnull()) & (df["DAR内容"].str.len()>10)]["DAR内容"].values
-        print(len(dar_text))
-        
-        
-        
-        print("bulk insert start.")
-        bulk(es, bulk_insert(dar_text))
-        print("bulk insert end.")
