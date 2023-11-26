@@ -35,6 +35,11 @@ sysctl -w vm.max_map_count=262144
 # コンテナ立ち上げ
 docker-compose up
 
+# 証明書のコピー
+# バックエンド（FastAPI）とelasticsearchの通信に証明書が必要
+# Docker間通信で証明書を取得できるのかもしれないがうまくいかなかったので、elasticsearchのコンテナからコピーして使用
+docker cp es01:/usr/share/elasticsearch/config/certs/ca/ca.crt ./backend/api
+
 # FastAPI経由でインデックス作成
 curl -X POST http://localhost:8002/es/create_index/jawikinews
 ```
