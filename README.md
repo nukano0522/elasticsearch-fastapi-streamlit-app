@@ -12,6 +12,24 @@
 wget -P ./backend/api/data https://dumps.wikimedia.org/other/cirrussearch/20231120/jawikinews-20231120-cirrussearch-general.json.gz
 ```
 
+- docker-compose.ymlと同階層に.envファイルを用意
+``` env
+ELASTIC_PASSWORD = your_password
+KIBANA_PASSWORD = your_password
+ES_PORT = 9200
+CLUSTER_NAME = test_cluster
+LICENSE = trial
+MEM_LIMIT = 1073741824
+KIBANA_PORT = 5601
+```
+
+- コンテナ立ち上げる前に以下実行しておく（実行しないとメモリ不足エラーになる）
+``` bash
+sysctl -w vm.max_map_count=262144
+```
+（参考） https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+
+
 ## Usage
 ``` bash
 # コンテナ立ち上げ
