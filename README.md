@@ -1,4 +1,6 @@
 # Elasticsearch + FastAPI + Streamlit を使った検索アプリ
+![elasticsearch-streamlit-demo-2023-11-26_15 55 52](https://github.com/nukano0522/elasticsearch-fastapi-streamlit-app/assets/30750233/817cee90-91b3-45fe-9d6f-6950a405247c)
+
 
 ## 実行環境
 - Ubuntu 20.04.6 LTS (Focal Fossa)
