@@ -11,7 +11,7 @@ def keyword_search():
     # サブミットボタンが押されたときの処理
     if submit_button:
         # ここでバックエンドのデータ処理を行う
-        res = requests.get(f"http://backend:8002/search/my_index_01/{text_input}")
+        res = requests.get(f"http://backend:8002/search/jawikinews/{text_input}")
         # st.write(res.json())
         data = res.json()
         df = pd.json_normalize(data)

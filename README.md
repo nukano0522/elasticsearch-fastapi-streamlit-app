@@ -1,4 +1,11 @@
-# elasticsearch_pg
+# Elasticsearch + FastAPI + Streamlit を使った検索アプリ
+
+## 準備
+```
+wget -P ./backend/api/data https://dumps.wikimedia.org/other/cirrussearch/20231120/jawikinews-20231120-cirrussearch-general.json.gz
+
+curl -X POST http://localhost:8002/es/create_index/jawikinews
+```
 
 ## 参考資料
 - https://techblog.zozo.com/entry/elasticsearch-mapping-config-for-japanese-search
@@ -19,3 +26,4 @@ curl -X GET "localhost:9200/kaigo_swem_01/_analyze?pretty" -H 'Content-Type: app
   "text": "日本橋"
 }
 '
+
